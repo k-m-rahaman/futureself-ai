@@ -1,10 +1,12 @@
 "use client";
 
-import { ArrowRight, Columns3 } from "lucide-react";
+import { ArrowRight, Clock3, Columns3, FlaskConical } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState, type CSSProperties } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { branchColors, formatUsd, pathNumber } from "../../components/exploration/presentation";
+import type { Scenario } from "../../lib/domain";
 import { evaluate } from "../../lib/simulation";
 import { useWorkspace } from "../../lib/storage";
 
@@ -30,6 +32,47 @@ function ComparisonChart({ items, metric, capacity }: { items: ChartItem[]; metr
         </ResponsiveContainer>
       </div>
       <p>The dashed line marks your {isCost ? "available budget" : "available hours"}.</p>
+    </section>
+  );
+}
+
+function DecisionExperiment({ scenarios, hours, preferredId }: { scenarios: Scenario[]; hours: number; preferredId: string }) {
+  const [firstId, setFirstId] = useState(() => scenarios.find(path => path.id === preferredId)?.id ?? scenarios[0].id);
+  const [secondId, setSecondId] = useState(() => scenarios.find(path => path.id !== firstId)!.id);
+  const first = scenarios.find(path => path.id === firstId) ?? scenarios[0];
+  const second = scenarios.find(path => path.id === secondId && path.id !== first.id) ?? scenarios.find(path => path.id !== first.id)!;
+  const minutes = Math.min(90, Math.floor(hours * 30));
+  const task = (path: Scenario) => path.milestones[0].actions[0];
+
+  return (
+    <section className="explore-surface compare-experiment" aria-labelledby="experiment-title">
+      <header>
+        <div><div className="explore-kicker"><FlaskConical size={14} aria-hidden="true" /> DECISION EXPERIMENT</div><h2 id="experiment-title">What should I test this week?</h2><p>Try the first step on two paths before committing to a roadmap.</p></div>
+        <span className="compare-experiment-time"><Clock3 size={15} aria-hidden="true" /> {minutes ? `${minutes} min per path` : "No session fits yet"}</span>
+      </header>
+      <div className="compare-experiment-pickers">
+        <label>First path<select value={first.id} onChange={event => setFirstId(event.target.value)}>
+          {scenarios.filter(path => path.id !== second.id).map(path => <option key={path.id} value={path.id}>{path.name}</option>)}
+        </select></label>
+        <label>Second path<select value={second.id} onChange={event => setSecondId(event.target.value)}>
+          {scenarios.filter(path => path.id !== first.id).map(path => <option key={path.id} value={path.id}>{path.name}</option>)}
+        </select></label>
+      </div>
+      <div className="compare-experiment-grid">
+        {[first, second].map(path => (
+          <article key={path.id} style={{ "--path-color": branchColors[scenarios.indexOf(path)] } as CSSProperties}>
+            <h3>{path.name}</h3>
+            <p>{path.alignment}</p>
+            <dl>
+              <dt>Start here</dt>
+              <dd>{minutes ? `Use your ${minutes}-minute session to start: ${task(path)} Stop when the timer ends and record what you completed.` : "Set aside at least two minutes this week to give both paths a time box."}</dd>
+              <dt>Uncertainty to watch</dt>
+              <dd>{path.uncertainties[0]}</dd>
+            </dl>
+          </article>
+        ))}
+      </div>
+      <footer className="compare-experiment-review"><strong>Compare the evidence</strong><p>For each path, note what you completed, what blocked you, and what you learned about your goal. Choose the next step based on those notes and add them to Reality Check when you open a roadmap.</p></footer>
     </section>
   );
 }
@@ -60,6 +103,7 @@ export default function Comparison() {
         <div><div className="explore-kicker"><Columns3 size={15} /> DECISION COMPARISON</div><h1>Compare paths</h1><p>{active.input.decision}</p></div>
         <span className="explore-mode"><i />{active.source === "ai" ? "AI-generated scenarios" : active.message ? "Offline template" : "Offline demo"}</span>
       </header>
+      <DecisionExperiment key={active.id} scenarios={active.scenarios} hours={active.input.hours} preferredId={active.selectedId} />
       <div className="compare-charts">
         <ComparisonChart items={items} metric="effort" capacity={rows[0].stats.availableHours} />
         <ComparisonChart items={items} metric="cost" capacity={active.input.budget} />

@@ -38,6 +38,10 @@ test("student demo adapts to five weekly hours and saves roadmap progress", asyn
   await expect(page.getByText("POSSIBLE FUTURE SELF", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Compare paths" }).click();
   await expect(page.getByRole("heading", { name: "Compare paths" })).toBeVisible();
+  const experiment = page.getByRole("region", { name: "What should I test this week?" });
+  await expect(experiment).toContainText("90 min per path");
+  await experiment.getByLabel("Second path").selectOption({ label: "Entrepreneurship" });
+  await expect(experiment.getByRole("heading", { name: "Entrepreneurship" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Estimated effort chart" })).toContainText("130 h available");
   await page.getByRole("button", { name: "Build roadmap", exact: true }).nth(1).click();
   await expect(page).toHaveURL(/\/roadmap/);
@@ -95,6 +99,7 @@ test("mobile Studio submission and Reality Check update an offline roadmap", asy
   await expect(page.getByRole("status")).toContainText("Check-in saved");
   await expect(page.getByText("5 h/week", { exact: true })).toBeVisible();
   await expect(page.getByText(/Weekly hours: 12 → 5/)).toBeVisible();
+  await expect(page.getByText("What changed", { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByLabel("What happened?")).toHaveValue(observation);
   await expect(assumption).toBeChecked();

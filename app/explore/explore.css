@@ -218,3 +218,10 @@
   font-size: 11px;
   -webkit-line-clamp: 2;
 }
+
+.capacity-track { height: 7px; background: #0b1120; border: 1px solid #344363; border-radius: 999px; margin: 14px 0 5px; overflow: hidden; }
+.capacity-track span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#629dec,#71d5b0); transition: width 320ms var(--workspace-ease), background-color .2s; }
+.capacity-track .capacity-short { background: linear-gradient(90deg,#8c8df7,#e8ba83); }
+.what-if-readout .capacity-summary { color: #bbc6df; font-size: .75rem; margin-top: 0; }
+.path-details summary { transition: color .18s; }
+.path-details summary:hover { color: #ddd9ff; }

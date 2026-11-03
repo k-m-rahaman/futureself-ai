@@ -42,3 +42,19 @@
 @media (prefers-reduced-motion: reduce) {
   .compare-chart, .compare-matrix, .compare-plot .recharts-bar-rectangle path { animation: none; }
 }
+
+.compare-experiment { position: relative; overflow: hidden; margin-bottom: 16px; padding: clamp(18px, 3vw, 29px); border-color: #7781db66; background: radial-gradient(ellipse at 92% 0%,#5552a341,transparent 60%),linear-gradient(145deg,#1b2541,#10182c 78%); animation: workspace-arrive 450ms var(--workspace-ease) both; }
+.compare-experiment > header { display: flex; align-items: flex-start; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.compare-experiment h2 { font-size: clamp(1.4rem, 3vw, 2.05rem); font-weight: 650; letter-spacing: -.045em; margin: 6px 0; }
+.compare-experiment p { color: #b8c4dd; font-size: .85rem; line-height: 1.55; }
+.compare-experiment-time { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 6px 10px; border-radius: 999px; border: 1px solid #777fd470; background: #252e54; color: #dfddff; font-size: .73rem; }
+.compare-experiment-pickers, .compare-experiment-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 15px; }
+.compare-experiment-pickers label { display: grid; gap: 5px; font-size: .76rem; color: #cad4ec; }
+.compare-experiment-pickers select { width: 100%; min-width: 0; border: 1px solid #47567a; border-radius: 9px; background: #10182a; color: #f5f7ff; padding: 9px 11px; }
+.compare-experiment-grid article { background: #0d1527c7; border: 1px solid color-mix(in srgb,var(--path-color,#a5a9ff) 35%,#26304a); border-radius: 12px; padding: 15px; box-shadow: inset 0 2px color-mix(in srgb,var(--path-color,#a5a9ff) 48%,transparent); animation: workspace-arrive 280ms var(--workspace-ease) both; }
+.compare-experiment-grid article h3 { font-weight: 650; margin-block: 5px 7px; }
+.compare-experiment-grid article p + p { margin-top: 7px; }
+.compare-experiment-grid article strong, .compare-experiment-review strong { color: #eef2ff; }
+.compare-experiment-review { margin-top: 15px; border-top: 1px solid #3b4867; padding-top: 12px; }
+@media (max-width:570px) { .compare-experiment-grid { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion:reduce) { .compare-experiment,.compare-experiment-grid article { animation:none; } }

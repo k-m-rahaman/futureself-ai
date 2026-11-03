@@ -109,7 +109,7 @@ function ExplorerWorkspace({ record, save, update }: {
           {conversation ? (
             <Conversation key={selected.id} input={input} scenario={selected} demo={record.source === "demo"} />
           ) : milestone ? (
-            <div className="path-details">
+            <div className="path-details" key={selected.id + "/" + milestone.id}>
               <button className="path-back" onClick={() => select(selected.id)}>← Path overview</button>
               <div className="milestone-context">{milestone.scheduledMonth === null ? "UNSCHEDULED" : `MONTH ${milestone.scheduledMonth}`} · {milestone.effortHours} EST. HOURS</div>
               <h3>{milestone.title}</h3>
@@ -122,7 +122,7 @@ function ExplorerWorkspace({ record, save, update }: {
               <DetailList title="Assumptions" items={milestone.assumptions} />
             </div>
           ) : (
-            <div className="path-details">
+            <div className="path-details" key={selected.id}>
               <p className="path-narrative">{selected.narrative}</p>
               <div className="path-metrics"><div><Clock3 size={15} /><strong>{selected.effortHours} h</strong><small>Estimated effort</small></div><div><strong>{formatUsd(selected.cost)}</strong><small>Estimated cost</small></div></div>
               <details><summary>Milestones</summary><ul className="path-milestone-list">{measured.milestones.map((item) => <li key={item.id}><button onClick={() => select(selected.id, item.id)}><strong>{item.title}</strong><small>{item.scheduledMonth === null ? "Unscheduled" : `Month ${item.scheduledMonth}`} · {item.status}</small></button></li>)}</ul></details>
@@ -152,6 +152,17 @@ function ExplorerWorkspace({ record, save, update }: {
             <div className="explore-kicker">CURRENT CAPACITY</div>
             <h3>{measured.availableHours} <small>hours available</small></h3>
             <p>{measured.requiredHours} estimated hours for {selected.name} over {measured.weeks} weeks.</p>
+            <div className="capacity-track" aria-hidden="true">
+              <span
+                className={measured.hourDelta < 0 ? "capacity-short" : ""}
+                style={{ width: `${Math.min(100, measured.availableHours / measured.requiredHours * 100)}%` }}
+              />
+            </div>
+            <p className="capacity-summary">
+              {measured.hourDelta < 0
+                ? `${-measured.hourDelta} h short of the full plan`
+                : `${measured.hourDelta} h remaining after estimated work`}
+            </p>
             {measured.flags.length > 0 && <ul>{measured.flags.map((flag) => <li key={flag}>{flag}</li>)}</ul>}
             {changes.length > 0 && <><h4>Assumptions changed</h4><ul>{changes.map((item) => <li key={item}>{item}</li>)}</ul></>}
             {measured.recommendations.length > 0 && <><h4>Suggested adjustments</h4><ul>{measured.recommendations.map((item) => <li key={item}>{item}</li>)}</ul></>}

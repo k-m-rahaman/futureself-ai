@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ClipboardCheck, Clock3, Compass, Flag, ListChecks, Route } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, ClipboardCheck, Clock3, Compass, Flag, ListChecks, Route } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useWorkspace, type Workspace } from "@/lib/storage";
 import { compareInputs, evaluate, roadmap } from "@/lib/simulation";
 import "../workspace.css";
+import "./roadmap.css";
+
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 
 export default function Roadmap() {
   const { ready, active, update } = useWorkspace();
@@ -32,6 +35,10 @@ function Plan({ record, update }: { record: Workspace; update: (patch: Partial<W
   const milestoneIds = new Set(scenario.milestones.map(milestone => scenario.id + "/" + milestone.id));
   const completedMilestones = record.completed.filter(id => milestoneIds.has(id)).length;
   const changes = checkIn ? compareInputs(checkIn.previousConstraints, record.input) : [];
+  const previous = checkIn ? evaluate(checkIn.previousConstraints, scenario) : undefined;
+  const nextMilestone = feasibility.milestones.find(milestone => !record.completed.includes(scenario.id + "/" + milestone.id));
+  const priorMilestone = previous?.milestones.find(milestone => milestone.id === nextMilestone?.id);
+  const monthLabel = (month: number | null) => month === null ? "Unscheduled" : `Month ${month}`;
 
   function realityCheck(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,6 +61,15 @@ function Plan({ record, update }: { record: Workspace; update: (patch: Partial<W
     <header className="page-intro"><span className="eyebrow"><Route size={16} /> Reverse Roadmap</span><h1>{scenario.name}</h1><p>Start with the smallest useful action, then check your progress against the milestones you chose.</p><div className="row-actions"><span className="sample-chip"><Clock3 size={14} /> {record.input.hours} h/week</span><span className="sample-chip">{record.source === "demo" ? "Offline scenario" : "AI-assisted scenario"}</span></div></header>
     <div className="roadmap-grid">
       <div className="roadmap-stack">
+        <section className="panel roadmap-list roadmap-next">
+          <span className="eyebrow"><Compass size={16} /> Next milestone</span>
+          <h2>{nextMilestone?.title ?? "All milestones completed"}</h2>
+          {nextMilestone ? <>
+            <div className="row-actions"><span className="sample-chip">{monthLabel(nextMilestone.scheduledMonth)}</span><span className="sample-chip">{nextMilestone.effortHours} h estimated</span></div>
+            <p className="muted">{nextMilestone.details}</p>
+            <p className="roadmap-next-action"><strong>Next action</strong> {nextMilestone.actions[0]}</p>
+          </> : <p className="muted">Review what you learned and decide whether to extend this path.</p>}
+        </section>
         <section className="panel roadmap-list"><h2><Compass size={18} /> First three actions</h2><ol className="first-actions">{plan.firstActions.map((action, i) => <li key={i}><span>0{i + 1}</span>{action}</li>)}</ol></section>
         {checklist("7-day action plan", plan.week)}
         {checklist("30-day roadmap", plan.month)}
@@ -69,8 +85,17 @@ function Plan({ record, update }: { record: Workspace; update: (patch: Partial<W
             <fieldset className="assumption-picker"><legend>Assumptions that no longer hold</legend>{scenario.assumptions.map(assumption => <label key={assumption}><input type="checkbox" checked={invalidated.includes(assumption)} onChange={event => setInvalidated(event.target.checked ? [...invalidated, assumption] : invalidated.filter(item => item !== assumption))} />{assumption}</label>)}</fieldset>
             <button className="btn primary" type="submit">Update roadmap <ArrowRight /></button>
           </form>
-          {updated && <p role="status" className="notice">Check-in saved. Your roadmap uses your updated time and budget.</p>}
-          {plan.reality.length > 0 && <><h3>Milestone review</h3><p className="muted">{completedMilestones} of {scenario.milestones.length} planned milestones marked complete.</p><ul className="reality-list">{[...changes, ...plan.reality].map((text, i) => <li key={i}>{text}</li>)}</ul></>}
+          {updated && <p role="status" className="roadmap-confirm"><CheckCircle2 size={17} /> Check-in saved. Your roadmap uses your updated time and budget.</p>}
+          {checkIn && previous && <div className="roadmap-revision">
+            <h3>What changed</h3>
+            <dl>
+              <div><dt>Capacity over {feasibility.weeks} weeks</dt><dd><span>{previous.availableHours} h</span><ArrowRight size={13} /><strong>{feasibility.availableHours} h</strong></dd></div>
+              <div><dt>Total budget</dt><dd><span>{usd.format(checkIn.previousConstraints.budget)}</span><ArrowRight size={13} /><strong>{usd.format(record.input.budget)}</strong></dd></div>
+              {nextMilestone && priorMilestone && <div><dt>Next milestone estimate</dt><dd><span>{monthLabel(priorMilestone.scheduledMonth)}</span><ArrowRight size={13} /><strong>{monthLabel(nextMilestone.scheduledMonth)}</strong></dd></div>}
+            </dl>
+            {changes.length > 0 && <ul>{changes.map(change => <li key={change}>{change}</li>)}</ul>}
+          </div>}
+          {plan.reality.length > 0 && <><h3>Milestone review</h3><p className="muted">{completedMilestones} of {scenario.milestones.length} planned milestones marked complete.</p><ul className="reality-list">{plan.reality.map((text, i) => <li key={i}>{text}</li>)}</ul></>}
           {feasibility.flags.length > 0 && <><h3>Constraints to revisit</h3><ul>{feasibility.flags.map((flag, i) => <li key={i}>{flag}</li>)}</ul></>}
         </section>
       </aside>

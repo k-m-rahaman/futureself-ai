@@ -1,0 +1,38 @@
+{
+  "name": "futureself-ai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "test:e2e": "playwright test"
+  },
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "next": "^16",
+    "react": "^19",
+    "react-dom": "^19",
+    "geist": "^1",
+    "lucide-react": "^0.577",
+    "@xyflow/react": "^12",
+    "recharts": "^3",
+    "motion": "^12",
+    "zod": "^4",
+    "tailwindcss": "^4",
+    "@tailwindcss/postcss": "^4"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "^16",
+    "tsx": "^4",
+    "typescript": "^5.9",
+    "@playwright/test": "^1"
+  }
+}

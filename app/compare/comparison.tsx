@@ -7,14 +7,14 @@ import { useState, type CSSProperties } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { branchColors, formatUsd, pathNumber } from "../../components/exploration/presentation";
 import type { Scenario } from "../../lib/domain";
-import { evaluate } from "../../lib/simulation";
+import { evaluate, formatHours } from "../../lib/simulation";
 import { useWorkspace } from "../../lib/storage";
 
 type ChartItem = { path: string; effort: number; cost: number };
 
 function ComparisonChart({ items, metric, capacity }: { items: ChartItem[]; metric: "effort" | "cost"; capacity: number }) {
   const isCost = metric === "cost";
-  const format = (value: number) => isCost ? formatUsd(value) : `${value} h`;
+  const format = (value: number) => isCost ? formatUsd(value) : `${formatHours(value)} h`;
   const max = Math.max(1, capacity, ...items.map((item) => item[metric]));
   return (
     <section className="explore-surface compare-chart" aria-label={isCost ? "Estimated cost chart" : "Estimated effort chart"}>

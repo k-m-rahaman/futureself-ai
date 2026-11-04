@@ -1,19 +1,20 @@
 import { z } from "zod";
-import { demoChat } from "../../../lib/demo";
+import { demoChat, maxConversationReplyLength } from "../../../lib/demo";
 import { decisionSchema, scenarioSchema } from "../../../lib/domain";
 import { fallbackReason, generateStructured, hasLiveModel } from "../../../lib/openai";
 import { readInput } from "../../../lib/request";
 
 export const maxDuration = 45;
 
-const output = z.strictObject({ answer: z.string().trim().min(1).max(3500) });
+const replyText = z.string().trim().min(1).max(maxConversationReplyLength);
+const output = z.strictObject({ answer: replyText });
 const requestSchema = z.strictObject({
   input: decisionSchema,
   scenario: scenarioSchema,
   question: z.string().trim().min(1).max(1500),
   history: z.array(z.strictObject({
     role: z.enum(["user", "assistant"]),
-    content: z.string().trim().min(1).max(3500),
+    content: replyText,
   })).max(12).optional(),
   demo: z.boolean().optional(),
 });

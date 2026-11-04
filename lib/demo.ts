@@ -112,7 +112,19 @@ export function demoFor(input: DecisionInput): Scenario[] {
   });
 }
 
+export const maxConversationReplyLength = 3500;
+
 export function demoChat(scenario: Scenario, question: string): string {
+  const answer = buildDemoReply(scenario, question);
+  if (answer.length <= maxConversationReplyLength) return answer;
+  const excerpt = answer.slice(0, maxConversationReplyLength - 1);
+  // A UTF-16 boundary can fall in the middle of an emoji or another supplementary character.
+  const tail = excerpt.charCodeAt(excerpt.length - 1);
+  const completeExcerpt = tail >= 0xd800 && tail <= 0xdbff ? excerpt.slice(0, -1) : excerpt;
+  return completeExcerpt.trimEnd() + "…";
+}
+
+function buildDemoReply(scenario: Scenario, question: string): string {
   const query = question.toLowerCase();
   const framing = "In this imagined version of your future, ";
   if (/hard|challenge|risk|mistake|obstacle/.test(query)) return `${framing}I would have kept a close eye on this risk: ${scenario.risks[0]} I’d use “${scenario.milestones[0].title}” to see how it shows up early.`;

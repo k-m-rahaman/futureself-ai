@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, Compass, FlaskConical, Layers3, SlidersHorizonta
 import { motion, useReducedMotion } from "motion/react";
 import { useState, type FormEvent } from "react";
 import { demoInput, demoFor, examples } from "@/lib/demo";
-import { decisionSchema, scenarioSetSchema, type DecisionInput } from "@/lib/domain";
+import { decisionSchema, MAX_BUDGET_USD, scenarioSetSchema, type DecisionInput } from "@/lib/domain";
 import { useWorkspace } from "@/lib/storage";
 import "../workspace.css";
 
@@ -81,7 +81,7 @@ export default function Studio() {
               <label>What matters most right now?<input required minLength={3} maxLength={1000} value={input.priorities} onChange={e => field("priorities", e.target.value)} placeholder="Flexibility, steady progress, and a low upfront cost" /></label>
             </>}
             {step === 2 && <>
-              <div className="field-pair"><label>Hours per week<input required type="number" min={0} max={168} step="any" value={input.hours} onChange={e => field("hours", e.target.valueAsNumber)} /></label><label>Total budget (USD)<input required type="number" min={0} max={1000000} step="any" value={input.budget} onChange={e => field("budget", e.target.valueAsNumber)} /></label></div>
+              <div className="field-pair"><label>Hours per week<input required type="number" min={0} max={168} step="any" value={input.hours} onChange={e => field("hours", e.target.valueAsNumber)} /></label><label>Total budget (USD)<input required type="number" min={0} max={MAX_BUDGET_USD} step="any" value={input.budget} onChange={e => field("budget", e.target.valueAsNumber)} /></label></div>
               <div className="field-pair"><label>Risk tolerance<select value={input.risk} onChange={e => field("risk", e.target.value as DecisionInput["risk"])}><option>Low</option><option>Moderate</option><option>High</option></select></label><label>Current skill level<select value={input.skillLevel} onChange={e => field("skillLevel", e.target.value as DecisionInput["skillLevel"])}><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label></div>
               <label>Planning horizon<select value={input.months} onChange={e => field("months", Number(e.target.value) as DecisionInput["months"])}><option value={3}>3 months</option><option value={6}>6 months</option><option value={12}>1 year</option><option value={36}>3 years</option></select></label>
             </>}

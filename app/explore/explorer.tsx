@@ -9,8 +9,8 @@ import { FutureTimeline } from "../../components/exploration/timeline";
 import { branchColors, formatUsd, pathNumber } from "../../components/exploration/presentation";
 import { useWhatIf } from "../../components/exploration/use-what-if";
 import { demoInput, demoScenarios } from "../../lib/demo";
-import type { DecisionInput } from "../../lib/domain";
-import { compareInputs, evaluate } from "../../lib/simulation";
+import { MAX_BUDGET_USD, type DecisionInput } from "../../lib/domain";
+import { compareInputs, evaluate, formatHours } from "../../lib/simulation";
 import { type Workspace, useWorkspace } from "../../lib/storage";
 
 export default function Explorer() {
@@ -142,7 +142,7 @@ function ExplorerWorkspace({ record, save, update }: {
         <div className="what-if-body">
           <div className="what-if-controls">
             <label className="what-if-hours"><span>Weekly availability <strong>{input.hours} h</strong></span><input type="range" min={0} max={Math.max(40, Math.ceil(record.input.hours))} step="1" value={input.hours} onChange={(event) => change("hours", Number(event.target.value))} /><span className="range-ends"><small>0 hours</small><small>{Math.max(40, Math.ceil(record.input.hours))} hours</small></span></label>
-            <label>Budget (USD)<input type="number" min={0} max={10000000} step="0.01" value={input.budget} onChange={(event) => change("budget", Math.max(0, Math.min(10000000, Number(event.target.value))))} /></label>
+            <label>Budget (USD)<input type="number" min={0} max={MAX_BUDGET_USD} step="any" value={input.budget} onChange={(event) => change("budget", Math.max(0, Math.min(MAX_BUDGET_USD, Number(event.target.value))))} /></label>
             <label>Timeline<select value={input.months} onChange={(event) => change("months", Number(event.target.value) as DecisionInput["months"])}><option value={3}>3 months</option><option value={6}>6 months</option><option value={12}>1 year</option><option value={36}>3 years</option></select></label>
             <label>Risk tolerance<select value={input.risk} onChange={(event) => change("risk", event.target.value as DecisionInput["risk"])}><option>Low</option><option>Moderate</option><option>High</option></select></label>
             <label>Skill level<select value={input.skillLevel} onChange={(event) => change("skillLevel", event.target.value as DecisionInput["skillLevel"])}><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></label>
@@ -150,7 +150,7 @@ function ExplorerWorkspace({ record, save, update }: {
           </div>
           <div className="what-if-readout" aria-live="polite">
             <div className="explore-kicker">CURRENT CAPACITY</div>
-            <h3>{measured.availableHours} <small>hours available</small></h3>
+            <h3>{formatHours(measured.availableHours)} <small>hours available</small></h3>
             <p>{measured.requiredHours} estimated hours for {selected.name} over {measured.weeks} weeks.</p>
             <div className="capacity-track" aria-hidden="true">
               <span
@@ -160,8 +160,8 @@ function ExplorerWorkspace({ record, save, update }: {
             </div>
             <p className="capacity-summary">
               {measured.hourDelta < 0
-                ? `${-measured.hourDelta} h short of the full plan`
-                : `${measured.hourDelta} h remaining after estimated work`}
+                ? `${formatHours(-measured.hourDelta)} h short of the full plan`
+                : `${formatHours(measured.hourDelta)} h remaining after estimated work`}
             </p>
             {measured.flags.length > 0 && <ul>{measured.flags.map((flag) => <li key={flag}>{flag}</li>)}</ul>}
             {changes.length > 0 && <><h4>Assumptions changed</h4><ul>{changes.map((item) => <li key={item}>{item}</li>)}</ul></>}

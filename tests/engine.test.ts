@@ -35,6 +35,18 @@ test("zero time leaves milestones unscheduled and zero budget surfaces the cost 
   assert.ok(result.flags.some((flag) => flag.includes("$75")));
 });
 
+test("a fractional capacity shortfall still makes the plan over capacity", () => {
+  const scenario = {
+    ...demoScenarios[0],
+    effortHours: 13.01,
+    milestones: demoScenarios[0].milestones.slice(0, 2).map(milestone => ({ ...milestone, effortHours: 4 })),
+  };
+  const result = evaluate({ ...demoInput, hours: 1, months: 3 }, scenario);
+  assert.equal(result.availableHours, 13);
+  assert.ok(result.hourDelta < 0);
+  assert.match(result.flags[0], /needs 0\.01 more hours/);
+});
+
 test("a reality check revises the first-month plan and identifies assumptions to revisit", () => {
   const baseline = roadmap(demoInput, demoScenarios[0]);
   const updated = roadmap(demoInput, demoScenarios[0], "I collected data but lost access to the campus lab.");

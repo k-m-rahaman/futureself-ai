@@ -76,6 +76,7 @@ test("mobile Studio submission and Reality Check update an offline roadmap", asy
   await expect(page.getByRole("heading", { name: "Your direction" })).toBeVisible();
   await page.getByRole("button", { name: "Continue", exact: true }).click();
   await expect(page.getByLabel("Hours per week")).toHaveValue("12");
+  await page.getByLabel("Total budget (USD)").fill("3000000");
 
   const generated = page.waitForResponse(response => response.url().endsWith("/api/scenarios") && response.request().method() === "POST");
   await page.getByRole("button", { name: "Explore my futures", exact: true }).click();
@@ -88,8 +89,10 @@ test("mobile Studio submission and Reality Check update an offline roadmap", asy
   await expect.poll(noHorizontalOverflow).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("mobile-explore.png"), animations: "disabled" });
 
+  await page.getByLabel("Budget (USD)").fill("2000000");
   await page.getByRole("button", { name: "Build this roadmap", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Reality Check" })).toBeVisible();
+  await expect(page.getByLabel("Budget (USD)")).toHaveValue("2000000");
   const observation = "I ran a baseline, but exams reduced my weekly availability.";
   await page.getByLabel("What happened?").fill(observation);
   await page.getByLabel("Hours per week").fill("5");

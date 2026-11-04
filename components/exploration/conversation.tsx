@@ -5,7 +5,7 @@ import { ArrowUp, Sparkles } from "lucide-react";
 import type { DecisionInput, Scenario } from "../../lib/domain";
 import { demoChat } from "../../lib/demo";
 
-type Message = { role: "user" | "assistant"; content: string };
+type Message = { role: "user" | "assistant"; content: string; offlineFallback?: boolean };
 
 const questions = ["What would be the hardest part?", "What should I do this week?", "What might I have to give up?"];
 
@@ -30,18 +30,24 @@ export function Conversation({ input, scenario, demo }: { input: DecisionInput; 
     setPending(true);
     try {
       let answer: string;
+      let offlineFallback = false;
       if (demo) {
         answer = demoChat(scenario, content);
       } else {
         const response = await fetch("/api/conversation", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ input, scenario, question: content, history: messages.slice(-8) }), signal: controller.signal,
+          body: JSON.stringify({
+            input, scenario, question: content,
+            history: messages.slice(-8).map(({ role, content }) => ({ role, content })),
+          }),
+          signal: controller.signal,
         });
         if (!response.ok) throw new Error();
         const result = await response.json();
-        answer = result.source === "demo" ? `Offline example response\n\n${result.answer}` : result.answer;
+        answer = result.answer;
+        offlineFallback = result.source === "demo";
       }
-      setMessages([...next, { role: "assistant", content: answer }]);
+      setMessages([...next, { role: "assistant", content: answer, offlineFallback }]);
     } catch {
       if (controller.signal.aborted) return;
       setError("The conversation is temporarily unavailable. You can send your question again.");
@@ -64,7 +70,11 @@ export function Conversation({ input, scenario, demo }: { input: DecisionInput; 
       <p className="voice-note">{demo ? "Offline example conversation" : "AI role-play grounded in this scenario"} · An imagined perspective</p>
       <div className="voice-messages" aria-live="polite">
         {messages.map((message, index) => (
-          <div className={`voice-message voice-${message.role}`} key={index}><small>{message.role === "user" ? "YOU, TODAY" : "POSSIBLE FUTURE SELF"}</small><p>{message.content}</p></div>
+          <div className={`voice-message voice-${message.role}`} key={index}>
+            <small>{message.role === "user" ? "YOU, TODAY" : "POSSIBLE FUTURE SELF"}</small>
+            {message.offlineFallback && <small>Offline example response</small>}
+            <p>{message.content}</p>
+          </div>
         ))}
         {pending && <p className="voice-note">Drafting a reply…</p>}
       </div>

@@ -1,14 +1,20 @@
 import type { DecisionInput, Scenario } from "./domain";
+import { ROADMAP_TASK_IDS } from "./roadmap-completion";
 
 const weeksPerMonth = 52 / 12;
-const round = (value: number) => Math.round(value * 10) / 10;
+const hoursDisplay = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2, useGrouping: false });
 const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
+export function formatHours(value: number) {
+  const display = hoursDisplay.format(value);
+  return value > 0 && display === "0" ? "<0.01" : display;
+}
 
 export function evaluate(input: DecisionInput, scenario: Scenario) {
   const weeks = Math.round(input.months * weeksPerMonth);
-  const availableHours = round(weeks * input.hours);
-  const hourDelta = round(availableHours - scenario.effortHours);
-  const budgetDelta = Math.round((input.budget - scenario.cost) * 100) / 100;
+  const availableHours = weeks * input.hours;
+  const hourDelta = availableHours - scenario.effortHours;
+  const budgetDelta = input.budget - scenario.cost;
   let cumulativeHours = 0;
   const milestones = scenario.milestones.map((milestone) => {
     cumulativeHours += milestone.effortHours;
@@ -22,7 +28,7 @@ export function evaluate(input: DecisionInput, scenario: Scenario) {
   const flags: string[] = [];
   const recommendations: string[] = [];
   if (hourDelta < 0) {
-    flags.push(`The full plan needs ${-hourDelta} more hours within this horizon.`);
+    flags.push(`The full plan needs ${formatHours(-hourDelta)} more hours within this horizon.`);
     const first = milestones[0];
     const lastInHorizon = milestones.findLast((milestone) => milestone.status !== "Beyond horizon");
     const hoursPerWeek = Math.ceil(scenario.effortHours / weeks * 10) / 10;
@@ -31,7 +37,8 @@ export function evaluate(input: DecisionInput, scenario: Scenario) {
       : `Shrink the first step, “${first.title},” to a trial that fits your time. The full workload would need about ${hoursPerWeek}h/week across this horizon.`);
   }
   if (budgetDelta < 0) {
-    flags.push(`Estimated cost exceeds the budget by ${dollars.format(-budgetDelta)}.`);
+    const shortfall = dollars.format(-budgetDelta);
+    flags.push(`Estimated cost exceeds the budget by ${shortfall === "$0.00" ? "less than $0.01" : shortfall}.`);
     recommendations.push("Price the first milestone separately and choose a free substitute before committing to paid resources.");
   }
   const delayed = milestones.filter((milestone) => milestone.status !== "On track");
@@ -79,14 +86,14 @@ export function roadmap(input: DecisionInput, scenario: Scenario, progress?: str
   const changedAssumptions = checkIn?.invalidatedAssumptions ?? [];
   const firstActions = [...new Set(achieved.length ? [...first.actions, ...scenario.nextSteps] : [...scenario.nextSteps, ...first.actions])].slice(0, 3);
   const week = [
-    { id: "week-schedule", title: "Reserve a work session", detail: input.hours > 0 ? `Block up to ${input.hours} hours this week and choose when to review the result.` : "Find a realistic time slot or choose a no-commitment research task." },
-    { id: "week-start", title: firstActions[0], detail: review ? "Use your latest check-in to choose the smallest remaining step." : first.details },
-    { id: "week-review", title: "Check the first dependency", detail: first.dependencies[0] ?? "Check that you have the time, tools, and access the first milestone needs." },
+    { id: ROADMAP_TASK_IDS.week.schedule, title: "Reserve a work session", detail: input.hours > 0 ? `Block up to ${input.hours} hours this week and choose when to review the result.` : "Find a realistic time slot or choose a no-commitment research task." },
+    { id: ROADMAP_TASK_IDS.week.start, title: firstActions[0], detail: review ? "Use your latest check-in to choose the smallest remaining step." : first.details },
+    { id: ROADMAP_TASK_IDS.week.review, title: "Check the first dependency", detail: first.dependencies[0] ?? "Check that you have the time, tools, and access the first milestone needs." },
   ];
   const month = [
-    { id: "month-trial", title: review || changedAssumptions.length ? "Run a smaller follow-up trial" : "Run the smallest practical trial", detail: changedAssumptions.length ? `Test a substitute for this assumption: “${changedAssumptions[0]}”` : review ? `Use this observation to revise your trial: “${review}”` : firstActions[1] ?? first.details },
-    { id: "month-evidence", title: "Review evidence at day 30", detail: `Compare actual time, spending, and results with “${first.title},” then decide which assumption to test next.` },
-    { id: "month-decision", title: "Choose the next commitment", detail: assessment.hourDelta < 0 || assessment.budgetDelta < 0 ? assessment.recommendations[0] : firstActions[2] ?? "Schedule the next milestone if the trial supports continuing." },
+    { id: ROADMAP_TASK_IDS.month.trial, title: review || changedAssumptions.length ? "Run a smaller follow-up trial" : "Run the smallest practical trial", detail: changedAssumptions.length ? `Test a substitute for this assumption: “${changedAssumptions[0]}”` : review ? `Use this observation to revise your trial: “${review}”` : firstActions[1] ?? first.details },
+    { id: ROADMAP_TASK_IDS.month.evidence, title: "Review evidence at day 30", detail: `Compare actual time, spending, and results with “${first.title},” then decide which assumption to test next.` },
+    { id: ROADMAP_TASK_IDS.month.decision, title: "Choose the next commitment", detail: assessment.hourDelta < 0 || assessment.budgetDelta < 0 ? assessment.recommendations[0] : firstActions[2] ?? "Schedule the next milestone if the trial supports continuing." },
   ];
   return {
     firstActions, week, month,
@@ -100,7 +107,7 @@ export function roadmap(input: DecisionInput, scenario: Scenario, progress?: str
     reality: [
       ...(review ? [`Your check-in: “${review}”`] : []),
       ...(achieved.length ? [`Milestones marked complete: ${achieved.map((milestone) => milestone.title).join(", ")}.`] : []),
-      ...(checkIn?.actualHours !== undefined ? [`Logged ${checkIn.actualHours}h against ${assessment.availableHours}h of total planned capacity.`] : []),
+      ...(checkIn?.actualHours !== undefined ? [`Logged ${checkIn.actualHours}h against ${formatHours(assessment.availableHours)}h of total planned capacity.`] : []),
       ...(checkIn?.actualBudget !== undefined ? [`Logged ${dollars.format(checkIn.actualBudget)} in spending against a total budget of ${dollars.format(input.budget)}.`] : []),
       ...changedAssumptions.map((assumption) => `Assumption marked as changed: ${assumption}`),
       ...(review || changedAssumptions.length ? [

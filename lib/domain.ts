@@ -4,13 +4,15 @@ const text = z.string().trim().min(1).max(2000);
 const list = z.array(text).min(1).max(12);
 const id = z.string().min(1).max(80).regex(/^[a-z0-9-]+$/);
 
+export const MAX_BUDGET_USD = 10_000_000;
+
 export const decisionSchema = z.strictObject({
   situation: text,
   decision: text,
   goals: text,
   skills: z.string().trim().max(2000),
   hours: z.number().min(0).max(168),
-  budget: z.number().min(0).max(10_000_000),
+  budget: z.number().min(0).max(MAX_BUDGET_USD),
   risk: z.enum(["Low", "Moderate", "High"]),
   months: z.union([z.literal(3), z.literal(6), z.literal(12), z.literal(36)]),
   skillLevel: z.enum(["Beginner", "Intermediate", "Advanced"]),

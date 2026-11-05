@@ -22,8 +22,9 @@ Open [the local app](http://localhost:3000). You can run the demo with no API ke
 1. Select **Try the demo** on the home page, or open [the demo workspace](http://localhost:3000/explore?demo=1). You start as a second-year computer science student with six months and 12 hours per week.
 2. Open an AI/ML, DSA, or entrepreneurship milestone to inspect actions, dependencies, and assumptions. Pan, zoom, or reset the timeline.
 3. Open the What-If controls and reduce weekly time to **5 hours**. Available capacity goes from **312 to 130 hours**. Inspect milestone rescheduling and the new recommendations.
-4. Compare the three paths and choose one for a **30-day roadmap**. Check off a task, then record real progress and updated constraints in **Reality Check**.
-5. Return through **History** to reopen your saved decision. What-If versions you explicitly save are separate records.
+4. In **Compare paths**, choose two paths and use **Find time this week**. Enter available work windows and any conflicts. Download each suggested session as an `.ics` file to import into your calendar.
+5. Choose a **30-day roadmap**. Check off a task, then record real progress and updated constraints in **Reality Check**.
+6. Return through **History** to reopen your saved decision. What-If versions you explicitly save are separate records.
 
 ## Enable live AI
 

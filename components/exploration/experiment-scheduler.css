@@ -1,0 +1,70 @@
+.experiment-scheduler {
+  margin-top: 16px;
+  border: 1px solid #425171;
+  border-radius: 12px;
+  background: #0c1426;
+}
+
+.experiment-scheduler > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  cursor: pointer;
+  list-style: none;
+  color: #dce5ff;
+  font-size: .88rem;
+  font-weight: 650;
+}
+
+.experiment-scheduler > summary::-webkit-details-marker { display: none; }
+.experiment-scheduler > summary > svg { color: #a9b5ff; flex: none; }
+.experiment-scheduler > summary span { flex: 1; }
+.experiment-scheduler > summary small { display: block; color: var(--muted); margin-top: 3px; font-size: .74rem; font-weight: 400; }
+.experiment-scheduler > summary::after { content: ""; border-right: 2px solid #9cabe2; border-bottom: 2px solid #9cabe2; width: 7px; height: 7px; margin: 0 3px 3px 0; transform: rotate(45deg); transition: transform .18s ease; }
+.experiment-scheduler[open] > summary::after { transform: translateY(3px) rotate(225deg); }
+.experiment-scheduler > summary:hover, .experiment-scheduler > summary:focus-visible { background: #1a2542; border-radius: 12px; }
+.experiment-scheduler-body { padding: 15px; border-top: 1px solid #2b3755; }
+.experiment-scheduler-body h3 { margin: 0 0 5px; color: #e5ecff; font-size: .86rem; font-weight: 650; }
+.experiment-scheduler-body p { margin: 0; color: var(--muted); font-size: .78rem; line-height: 1.55; }
+.experiment-scheduler-editors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.experiment-scheduler-editor { min-width: 0; padding: 12px; background: #152036; border: 1px solid #303e5d; border-radius: 10px; }
+.experiment-scheduler-editor legend { padding: 0 0 10px; font-size: .82rem; font-weight: 650; color: #e1e7ff; }
+.experiment-scheduler-fields { display: grid; grid-template-columns: minmax(0, 1.2fr) repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.experiment-scheduler-fields label { display: grid; min-width: 0; gap: 4px; color: #bfccea; font-size: .72rem; }
+.experiment-scheduler-fields input { box-sizing: border-box; min-width: 0; min-height: 36px; width: 100%; padding: 4px 6px; border: 1px solid #4a587c; border-radius: 7px; color-scheme: dark; background: #0c1426; color: #eef2ff; font-size: .75rem; }
+.experiment-scheduler .btn { min-height: 34px; font-size: .76rem; }
+.experiment-scheduler-blocks { padding: 0; margin: 8px 0 0; list-style: none; }
+.experiment-scheduler-blocks li { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 5px 0; border-top: 1px solid #334467; color: #c4cfee; font-size: .73rem; }
+.experiment-scheduler-blocks button { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid transparent; border-radius: 6px; color: #afbee6; }
+.experiment-scheduler-blocks button:hover, .experiment-scheduler-blocks button:focus-visible { border-color: #6073a6; background: #253453; color: #fff; }
+.experiment-scheduler-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.experiment-scheduler-actions .btn:disabled { opacity: .55; cursor: not-allowed; }
+.experiment-scheduler-body .experiment-scheduler-error { color: #ffcbb1; margin-top: 8px; }
+.experiment-scheduler-results { margin-top: 14px; padding: 11px 12px; border: 1px solid #506091; border-radius: 10px; background: #15213b; }
+.experiment-scheduler-results > header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 7px; }
+.experiment-scheduler-results h4 { margin: 0; color: #ecf0ff; font-size: .83rem; font-weight: 650; }
+.experiment-scheduler-results > p { margin-top: 7px; }
+.experiment-scheduler-results ol { padding: 0; margin: 9px 0 0; list-style: none; }
+.experiment-scheduler-results li { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-top: 1px solid #334467; font-size: .76rem; }
+.experiment-scheduler-results li strong, .experiment-scheduler-results li div span { display: block; }
+.experiment-scheduler-results li div span { color: #b9c7e8; margin-top: 2px; }
+
+@media (max-width: 740px) {
+  .experiment-scheduler-editors { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 420px) {
+  .experiment-scheduler-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .experiment-scheduler-fields label:first-child { grid-column: 1 / -1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .experiment-scheduler[open] .experiment-scheduler-body,
+  .experiment-scheduler-results { animation: scheduler-enter 220ms ease-out both; }
+  @keyframes scheduler-enter { from { opacity: .76; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experiment-scheduler > summary::after { transition: none; }
+}

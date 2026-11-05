@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type CSSProperties } from "react";
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { ExperimentScheduler } from "../../components/exploration/experiment-scheduler";
 import { branchColors, formatUsd, pathNumber } from "../../components/exploration/presentation";
 import type { Scenario } from "../../lib/domain";
 import { evaluate, formatHours } from "../../lib/simulation";
@@ -72,6 +73,13 @@ function DecisionExperiment({ scenarios, hours, preferredId }: { scenarios: Scen
           </article>
         ))}
       </div>
+      <ExperimentScheduler
+        minutes={minutes}
+        paths={[
+          { id: first.id, name: first.name, task: task(first) },
+          { id: second.id, name: second.name, task: task(second) },
+        ]}
+      />
       <footer className="compare-experiment-review"><strong>Compare the evidence</strong><p>For each path, note what you completed, what blocked you, and what you learned about your goal. Choose the next step based on those notes and add them to Reality Check when you open a roadmap.</p></footer>
     </section>
   );

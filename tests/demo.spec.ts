@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 
 test("landing preview switches between three paths", async ({ page }) => {
   await page.goto("/");
@@ -42,6 +43,26 @@ test("student demo adapts to five weekly hours and saves roadmap progress", asyn
   await expect(experiment).toContainText("90 min per path");
   await experiment.getByLabel("Second path").selectOption({ label: "Entrepreneurship" });
   await expect(experiment.getByRole("heading", { name: "Entrepreneurship" })).toBeVisible();
+  await page.clock.setFixedTime(new Date("2030-06-10T12:00:00Z"));
+  await experiment.locator("summary").filter({ hasText: "Find time this week" }).click();
+  await experiment.getByLabel("Available date", { exact: true }).fill("2030-06-11");
+  await experiment.getByLabel("Available from", { exact: true }).fill("13:00");
+  await experiment.getByLabel("Available until", { exact: true }).fill("15:00");
+  await experiment.getByRole("button", { name: "Add work window", exact: true }).click();
+  await experiment.getByLabel("Busy date", { exact: true }).fill("2030-06-11");
+  await experiment.getByLabel("Busy from", { exact: true }).fill("13:30");
+  await experiment.getByLabel("Busy until", { exact: true }).fill("14:00");
+  await experiment.getByRole("button", { name: "Add busy block", exact: true }).click();
+  await experiment.getByRole("button", { name: "Find times", exact: true }).click();
+  await expect(experiment.getByRole("heading", { name: "Two 30-minute sessions" })).toBeVisible();
+  const downloaded = page.waitForEvent("download");
+  await experiment.getByRole("button", { name: "Download both (.ics)", exact: true }).click();
+  const file = await downloaded;
+  expect(file.suggestedFilename()).toMatch(/\.ics$/);
+  const calendar = await readFile(await file.path(), "utf8");
+  expect(calendar.match(/BEGIN:VEVENT/g)).toHaveLength(2);
+  expect(calendar).toContain("Algorithms & DSA");
+  expect(calendar).toContain("Entrepreneurship");
   await expect(page.getByRole("region", { name: "Estimated effort chart" })).toContainText("130 h available");
   await page.getByRole("button", { name: "Build roadmap", exact: true }).nth(1).click();
   await expect(page).toHaveURL(/\/roadmap/);
@@ -82,10 +103,9 @@ test("mobile Studio submission and Reality Check update an offline roadmap", asy
   await page.getByRole("button", { name: "Explore my futures", exact: true }).click();
   const result = await generated;
   expect(result.ok()).toBe(true);
-  const payload = await result.json();
-  expect(payload.source).toBe("demo");
-  expect(payload.scenarios).toHaveLength(3);
   await expect(page.getByRole("heading", { name: "Future Explorer" })).toBeVisible();
+  await expect(page.getByText("Offline template", { exact: true })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Select a path" }).getByRole("button")).toHaveCount(3);
   await expect.poll(noHorizontalOverflow).toBe(true);
   await page.screenshot({ path: testInfo.outputPath("mobile-explore.png"), animations: "disabled" });
 
